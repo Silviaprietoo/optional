@@ -47,7 +47,10 @@ filtered_df = df2[df2['Acronym'].isin(selected_countries) &
                   df2['activityType'].isin(selected_activity_types)]
 
 # Display filtered data
-st.write(filtered_df)
+if not filtered_df.empty:
+    st.write(filtered_df)
+else:
+    st.write("No data available based on the selected criteria.")
 
 # Display a table of Partner Contributions per Country
 st.text('Table of Partner Contributions per Country')
@@ -103,8 +106,6 @@ if selected_countries:
 
 '''Optional'''
 
-import streamlit as st
-
 # Display a graph with evolution of received grants of the partners in a country according to their activityType
 st.text('Graph with evolution of received grants per partners according to activityType')
 
@@ -118,6 +119,7 @@ df_grants = df_country.groupby('activityType')['ecContribution'].sum().reset_ind
 st.bar_chart(df_grants.set_index('activityType'))
 
 conn.close()
+
 
 
 
