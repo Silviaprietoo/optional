@@ -39,7 +39,7 @@ selected_countries = st.multiselect('Choose Country(s)', sorted(country_acronyms
 selected_years = st.multiselect('Choose Year(s)', df_project['year'].unique())
 
 # Select multiple activity types
-selected_activity_types = st.multiselect('Choose Activity Type(s)', df_project['activityType'].unique())
+selected_activity_types = st.multiselect('Choose Activity Type(s)', df2['activityType'].unique())
 
 # Filter data based on selected criteria
 filtered_df = df2[df2['Acronym'].isin(selected_countries) &
@@ -118,6 +118,7 @@ df_grants = df_country.groupby('activityType')['ecContribution'].sum().reset_ind
 st.bar_chart(df_grants.set_index('activityType'))
 
 conn.close()
+
 
 
 
