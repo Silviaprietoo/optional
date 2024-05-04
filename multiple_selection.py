@@ -32,7 +32,7 @@ st.image(image)
 selected_countries = st.multiselect('Choose Countries', sorted(country_acronyms.keys()))
 
 # Multiple selection for years
-selected_years = st.multiselect('Choose Years', df_projects['Year'].unique())
+selected_years = st.multiselect('Choose Years', df_projects['year'].unique())
 
 # Multiple selection for activity types
 selected_activity_types = st.multiselect('Choose Activity Types', df_projects['ActivityType'].unique())
