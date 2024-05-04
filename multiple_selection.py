@@ -51,6 +51,7 @@ st.write("Selected countries:", selected_countries)
 st.write("Selected years:", selected_years)
 st.write("Selected activity types:", selected_activity_types)
 st.write("Filtered DataFrame shape:", filtered_df.shape)
+st.write("Filtered DataFrame:", filtered_df)
 
 # Display filtered data
 if not filtered_df.empty:
