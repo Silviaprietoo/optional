@@ -1,130 +1,91 @@
 import pandas as pd
 import sqlite3
-from sqlite3 import connect
 import streamlit as st
-from PIL import Image
+import matplotlib.pyplot as plt
 
-image = Image.open('Logo-KDT-JU.webp')
-st.image(image)
+# Connect to the database
+conn = sqlite3.connect('ecsel_database.db')
 
-conn = connect('ecsel_database.db')
-
-# Read data from the different tables
-df_project = pd.read_sql('SELECT * FROM PROJECTS', conn)
+# Read data from the database tables
+df_projects = pd.read_sql('SELECT * FROM PROJECTS', conn)
 df_participants = pd.read_sql('SELECT * FROM PARTICIPANTS', conn)
 df_countries = pd.read_sql('SELECT * FROM COUNTRIES', conn)
 
-# Merge data from different tables into df2
-df2 = pd.read_sql('''
-    SELECT p.*, pj.*, c.Country 
-    FROM PARTICIPANTS AS p, PROJECTS AS pj, COUNTRIES AS c
-    WHERE p.projectID = pj.projectID AND p.country = c.Acronym
-''', conn)
-df2 = df2.rename(columns={'country': 'Acronym'})
-df2 = df2.rename(columns={'acronym': 'organization_acronym'})
+# Define country acronyms dictionary
+country_acronyms = {
+    'Belgium': 'BE', 'Bulgaria': 'BG', 'Czechia': 'CZ', 'Denmark': 'DK', 'Germany': 'DE', 
+    'Estonia': 'EE', 'Ireland': 'IE', 'Greece': 'EL', 'Spain': 'ES', 'France': 'FR', 
+    'Croatia': 'HR', 'Italy': 'IT', 'Cyprus': 'CY', 'Latvia': 'LV', 'Lithuania': 'LT',
+    'Luxembourg': 'LU', 'Hungary': 'HU', 'Malta': 'MT', 'Netherlands': 'NL', 'Austria': 'AT', 
+    'Poland': 'PL', 'Portugal': 'PT', 'Romania': 'RO', 'Slovenia': 'SI', 'Slovakia': 'SK', 
+    'Finland': 'FI', 'Sweden': 'SE'
+}
 
+# Title and image
 st.title('Partner Search App')
+image = Image.open('Logo-KDT-JU.webp')
+st.image(image)
 
-# Select multiple countries
-country_acronyms = {'Belgium': 'BE', 'Bulgaria': 'BG', 'Czechia': 'CZ', 'Denmark': 'DK', 'Germany': 'DE', 
-                    'Estonia': 'EE', 'Ireland': 'IE', 'Greece': 'EL', 'Spain': 'ES', 'France': 'FR', 
-                    'Croatia': 'HR', 'Italy': 'IT', 'Cyprus': 'CY', 'Latvia': 'LV', 'Lithuania': 'LT',
-                    'Luxembourg': 'LU', 'Hungary': 'HU', 'Malta': 'MT', 'Netherlands': 'NL', 'Austria': 'AT', 
-                    'Poland': 'PL', 'Portugal': 'PT', 'Romania': 'RO', 'Slovenia': 'SI', 'Slovakia': 'SK', 
-                    'Finland': 'FI', 'Sweden': 'SE'}
+# Multiple selection for countries
+selected_countries = st.multiselect('Choose Countries', sorted(country_acronyms.keys()))
 
-selected_countries = st.multiselect('Choose Country(s)', sorted(country_acronyms.keys()))
+# Multiple selection for years
+selected_years = st.multiselect('Choose Years', df_projects['Year'].unique())
 
-# Select multiple years
-selected_years = st.multiselect('Choose Year(s)', df_project['year'].unique())
+# Multiple selection for activity types
+selected_activity_types = st.multiselect('Choose Activity Types', df_projects['ActivityType'].unique())
 
-# Select multiple activity types
-selected_activity_types = st.multiselect('Choose Activity Type(s)', df2['activityType'].unique())
+# Function to convert country name to acronym
+def country_to_acronym(country_name):
+    return country_acronyms.get(country_name)
 
 # Filter data based on selected criteria
-filtered_df = df2[df2['Acronym'].isin(selected_countries) &
-                  df2['year'].isin(selected_years) &
-                  df2['activityType'].isin(selected_activity_types)]
+filtered_df = df_participants[df_participants['Country'].isin(selected_countries)]
+filtered_df = filtered_df[filtered_df['Year'].isin(selected_years)]
+filtered_df = filtered_df[filtered_df['ActivityType'].isin(selected_activity_types)]
 
-# Display debug statements
-st.write("Selected countries:", selected_countries)
-st.write("Selected years:", selected_years)
-st.write("Selected activity types:", selected_activity_types)
-st.write("Filtered DataFrame shape:", filtered_df.shape)
-st.write("Filtered DataFrame head:", filtered_df.head())
+# Group by organization and calculate total contribution
+grouped_df = filtered_df.groupby(['OrganizationID', 'ShortName', 'ActivityType', 'OrganizationURL'])['Contribution'].sum().reset_index()
+grouped_df.rename(columns={'Contribution': 'TotalContribution'}, inplace=True)
 
-# Display filtered data
-if not filtered_df.empty:
-    st.write(filtered_df)
-else:
-    st.write("No data available based on the selected criteria.")
+# Sort by total contribution
+sorted_df = grouped_df.sort_values(by='TotalContribution', ascending=False)
 
-# Display a table of Partner Contributions per Country
-st.text('Table of Partner Contributions per Country')
-def display_dataframe(df, country_acronym):
-    df_filtered = df[df['Acronym'] == country_acronym]
-    df_part = df_filtered.groupby(['name', 'shortName', 'activityType', 'organizationURL']).agg({'ecContribution': ['sum']})
-    df_part = df_part.reset_index()
-    df_part = df_part.sort_values(by=('ecContribution', 'sum'), ascending=False) 
-    return df_part
+# Display the dataframe
+st.write('Table of Partner Contributions per Country')
+st.write(sorted_df, index=False)
 
-if selected_countries:
-    for country in selected_countries:
-        participants = display_dataframe(df2, country)
-        st.write(participants, index=False)
-
-# Generate a new project dataframe with project coordinators from the selected country and order it in ascending order by 'shortName'
-st.text('Table of Project Coordinators per Country')
-def display_project_coordinators(df, country_acronym):
-    df_filtered = df[df['Acronym'] == country_acronym]
-    df_filtered['Coordinator'] = (df_filtered['role'] == 'coordinator') * 1
-    pjc_df = df_filtered.groupby(['name', 'shortName', 'activityType', 'organizationURL']).agg({'Coordinator': ['sum']})
-    pjc_df = pjc_df.reset_index()
-    pjc_df = pjc_df.sort_values('shortName')
-    return pjc_df
-
-if selected_countries:
-    for country in selected_countries:
-        pjc_df = display_project_coordinators(df2, country)
-        st.write(pjc_df, index=False)
-
-# Download the generated datasets (participants and project coordinators) as CSV files
+# Save datasets as CSV files
 st.text('Download the Data Below')
 
 @st.cache
-def convert_participants(participants):
-    return participants.to_csv().encode('utf-8')
+def convert_to_csv(df):
+    return df.to_csv(index=False).encode('utf-8')
 
-if selected_countries:
-    for country in selected_countries:
-        participants = display_dataframe(df2, country)
-        st.download_button(label=f"Participants CSV - {country}", data=convert_participants(participants), 
-                           file_name=f'participants_{country}.csv', mime='text/csv')
+st.download_button(label='Download Partners CSV', data=convert_to_csv(sorted_df), file_name='partners.csv', mime='text/csv')
 
-@st.cache
-def convert_project_coordinators(pjc_df):
-    return pjc_df.to_csv().encode('utf-8')
-
-if selected_countries:
-    for country in selected_countries:
-        pjc_df = display_project_coordinators(df2, country)
-        st.download_button(label=f"Project Coordinators CSV - {country}", data=convert_project_coordinators(pjc_df), 
-                           file_name=f'project_coordinators_{country}.csv', mime='text/csv')
-
-'''Optional'''
-
-# Display a graph with evolution of received grants of the partners in a country according to their activityType
+# Plot the graph with evolution of received grants per partners according to activityType
 st.text('Graph with evolution of received grants per partners according to activityType')
 
-# Filter data for the selected country
-df_country = df2[df2['Acronym'] == selected_countries[0]] if selected_countries else df2
+# Filter data for the selected countries, years, and activity types
+filtered_data = df_participants[df_participants['Country'].isin(selected_countries)]
+filtered_data = filtered_data[filtered_data['Year'].isin(selected_years)]
+filtered_data = filtered_data[filtered_data['ActivityType'].isin(selected_activity_types)]
 
 # Group by activityType and sum the contributions
-df_grants = df_country.groupby('activityType')['ecContribution'].sum().reset_index()
+df_grants = filtered_data.groupby(['Country', 'Year', 'ActivityType'])['Contribution'].sum().reset_index()
 
 # Plot the graph
-st.bar_chart(df_grants.set_index('activityType'))
+fig, ax = plt.subplots()
+for activity_type, data in df_grants.groupby('ActivityType'):
+    ax.plot(data['Year'], data['Contribution'], marker='o', label=activity_type)
+ax.set_xlabel('Year')
+ax.set_ylabel('Total Contribution')
+ax.set_title('Evolution of Received Grants per Partners')
+ax.legend()
+st.pyplot(fig)
 
+# Close the database connection
 conn.close()
 
 
