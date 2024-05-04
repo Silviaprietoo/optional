@@ -46,6 +46,12 @@ filtered_df = df2[df2['Acronym'].isin(selected_countries) &
                   df2['year'].isin(selected_years) &
                   df2['activityType'].isin(selected_activity_types)]
 
+# Display debug statements
+st.write("Selected countries:", selected_countries)
+st.write("Selected years:", selected_years)
+st.write("Selected activity types:", selected_activity_types)
+st.write("Filtered DataFrame shape:", filtered_df.shape)
+
 # Display filtered data
 if not filtered_df.empty:
     st.write(filtered_df)
@@ -119,6 +125,7 @@ df_grants = df_country.groupby('activityType')['ecContribution'].sum().reset_ind
 st.bar_chart(df_grants.set_index('activityType'))
 
 conn.close()
+
 
 
 
