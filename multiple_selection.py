@@ -1,6 +1,10 @@
 import pandas as pd
+import numpy as np
 import sqlite3
+from sqlite3 import connect
 import streamlit as st
+from PIL import Image
+
 
 # Connect to the database
 conn = sqlite3.connect('ecsel_database.db')
