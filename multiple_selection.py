@@ -35,7 +35,7 @@ selected_countries = st.multiselect('Choose Countries', sorted(country_acronyms.
 selected_years = st.multiselect('Choose Years', df_projects['year'].unique())
 
 # Multiple selection for activity types
-selected_activity_types = st.multiselect('Choose Activity Types', df_projects['ActivityType'].unique())
+selected_activity_types = st.multiselect('Choose Activity Types', df_projects['activityType'].unique())
 
 # Function to convert country name to acronym
 def country_to_acronym(country_name):
@@ -44,10 +44,10 @@ def country_to_acronym(country_name):
 # Filter data based on selected criteria
 filtered_df = df_participants[df_participants['Country'].isin(selected_countries)]
 filtered_df = filtered_df[filtered_df['Year'].isin(selected_years)]
-filtered_df = filtered_df[filtered_df['ActivityType'].isin(selected_activity_types)]
+filtered_df = filtered_df[filtered_df['activityType'].isin(selected_activity_types)]
 
 # Group by organization and calculate total contribution
-grouped_df = filtered_df.groupby(['OrganizationID', 'ShortName', 'ActivityType', 'OrganizationURL'])['Contribution'].sum().reset_index()
+grouped_df = filtered_df.groupby(['OrganizationID', 'ShortName', 'activityType', 'OrganizationURL'])['Contribution'].sum().reset_index()
 grouped_df.rename(columns={'Contribution': 'TotalContribution'}, inplace=True)
 
 # Sort by total contribution for participants
@@ -71,11 +71,11 @@ st.download_button(label='Download Participants CSV', data=convert_to_csv_partic
 df_project_coordinators = df_participants[df_participants['Role'] == 'Coordinator']
 df_project_coordinators = df_project_coordinators[df_project_coordinators['Country'].isin(selected_countries)]
 df_project_coordinators = df_project_coordinators[df_project_coordinators['Year'].isin(selected_years)]
-df_project_coordinators = df_project_coordinators[df_project_coordinators['ActivityType'].isin(selected_activity_types)]
+df_project_coordinators = df_project_coordinators[df_project_coordinators['activityType'].isin(selected_activity_types)]
 
 # Display the dataframe for project coordinators
 st.write('Table of Project Coordinators per Country')
-st.write(df_project_coordinators[['ShortName', 'ActivityType', 'ProjectAcronym', 'Name']], index=False)
+st.write(df_project_coordinators[['ShortName', 'activityType', 'ProjectAcronym', 'Name']], index=False)
 
 # Save datasets as CSV files for project coordinators
 st.text('Download the Data Below')
@@ -90,19 +90,20 @@ st.download_button(label='Download Project Coordinators CSV', data=convert_to_cs
 # Filter data for the selected countries, years, and activity types
 filtered_data = df_participants[df_participants['Country'].isin(selected_countries)]
 filtered_data = filtered_data[filtered_data['Year'].isin(selected_years)]
-filtered_data = filtered_data[filtered_data['ActivityType'].isin(selected_activity_types)]
+filtered_data = filtered_data[filtered_data['activityType'].isin(selected_activity_types)]
 
 # Group by activityType and sum the contributions
-df_grants = filtered_data.groupby(['Year', 'ActivityType'])['Contribution'].sum().reset_index()
+df_grants = filtered_data.groupby(['Year', 'activityType'])['Contribution'].sum().reset_index()
 
 # Plot the graph
 st.text('Graph with evolution of received grants per partners according to activityType')
 for activity_type in selected_activity_types:
-    data = df_grants[df_grants['ActivityType'] == activity_type]
+    data = df_grants[df_grants['activityType'] == activity_type]
     st.line_chart(data.set_index('Year')['Contribution'])
 
 # Close the database connection
 conn.close()
+
 
 
 
