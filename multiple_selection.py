@@ -4,6 +4,7 @@ import sqlite3
 from sqlite3 import connect
 import streamlit as st
 from PIL import Image
+
 # Connect to the database
 conn = sqlite3.connect('ecsel_database.db')
 
@@ -30,8 +31,11 @@ st.image(image)
 # Multiple selection for countries
 selected_countries = st.multiselect('Choose Countries', sorted(country_acronyms.keys()))
 
-# Multiple selection for years
-selected_years = st.multiselect('Choose Years', df_projects['Year'].unique())
+# Verify column names in df_projects
+st.write(df_projects.head())  # Print the first few rows to see column names
+
+# Adjust the code to use the correct column name for years
+selected_years = st.multiselect('Choose Years', df_projects['NameOfTheYearColumn'].unique())
 
 # Multiple selection for activity types
 selected_activity_types = st.multiselect('Choose Activity Types', df_projects['ActivityType'].unique())
