@@ -1,7 +1,6 @@
 import pandas as pd
 import sqlite3
 import streamlit as st
-import matplotlib.pyplot as plt
 
 # Connect to the database
 conn = sqlite3.connect('ecsel_database.db')
@@ -76,17 +75,13 @@ filtered_data = filtered_data[filtered_data['ActivityType'].isin(selected_activi
 df_grants = filtered_data.groupby(['Country', 'Year', 'ActivityType'])['Contribution'].sum().reset_index()
 
 # Plot the graph
-fig, ax = plt.subplots()
-for activity_type, data in df_grants.groupby('ActivityType'):
-    ax.plot(data['Year'], data['Contribution'], marker='o', label=activity_type)
-ax.set_xlabel('Year')
-ax.set_ylabel('Total Contribution')
-ax.set_title('Evolution of Received Grants per Partners')
-ax.legend()
-st.pyplot(fig)
+for activity_type in selected_activity_types:
+    data = df_grants[df_grants['ActivityType'] == activity_type]
+    st.line_chart(data.set_index('Year')['Contribution'], use_container_width=True)
 
 # Close the database connection
 conn.close()
+
 
 
 
