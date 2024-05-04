@@ -4,7 +4,6 @@ import sqlite3
 from sqlite3 import connect
 import streamlit as st
 from PIL import Image
-import matplotlib.pyplot as plt
 import seaborn as sns
 
 # Load the image
@@ -66,7 +65,7 @@ def display_dataframe(df, country_acronym):
 if selected_countries:
     for country in selected_countries:
         participants = display_dataframe(df2, country)
-        st.write(participants, index=False)
+        st.write(participants)
 
 # Generate a new project dataframe with project coordinators from the selected country and order it in ascending order by 'shortName'
 st.text('Table of Project Coordinators per Country')
@@ -81,14 +80,14 @@ def display_project_coordinators(df, country_acronym):
 if selected_countries:
     for country in selected_countries:
         pjc_df = display_project_coordinators(df2, country)
-        st.write(pjc_df, index=False)
+        st.write(pjc_df)
 
 # Download the generated datasets (participants and project coordinators) as CSV files
 st.text('Download the Data Below')
 
 @st.cache
 def convert_participants(participants):
-    return participants.to_csv().encode('utf-8')
+    return participants.to_csv(index=False).encode('utf-8')
 
 if selected_countries:
     for country in selected_countries:
@@ -98,7 +97,7 @@ if selected_countries:
 
 @st.cache
 def convert_project_coordinators(pjc_df):
-    return pjc_df.to_csv().encode('utf-8')
+    return pjc_df.to_csv(index=False).encode('utf-8')
 
 if selected_countries:
     for country in selected_countries:
@@ -114,13 +113,11 @@ if selected_countries:
     for country in selected_countries:
         df_country = df2[df2['Acronym'] == country] 
         df_grants = df_country.groupby('activityType')['ecContribution'].sum().reset_index() 
-        plt.figure(figsize=(10,6))
-        sns.barplot(x='activityType', y='ecContribution', data=df_grants)
-        plt.title(f'Evolution of Received Grants by Activity Type in {country}')
-        plt.xlabel('Activity Type')
-        plt.ylabel('Received Grants')
-        st.pyplot(plt)
+        st.bar_chart(df_grants.set_index('activityType'))
 
 # Close the SQLite connection
 conn.close()
 
+
+
+ 
