@@ -5,7 +5,6 @@ from sqlite3 import connect
 import streamlit as st
 from PIL import Image
 
-
 # Connect to the database
 conn = sqlite3.connect('ecsel_database.db')
 
@@ -32,11 +31,8 @@ st.image(image)
 # Multiple selection for countries
 selected_countries = st.multiselect('Choose Countries', sorted(country_acronyms.keys()))
 
-# Verify column names in df_projects
-st.write(df_projects.head())  # Print the first few rows to see column names
-
-# Adjust the code to use the correct column name for years
-selected_years = st.multiselect('Choose Years', df_projects['ActualYearColumnName'].unique())
+# Multiple selection for years
+selected_years = st.multiselect('Choose Years', df_projects['Year'].unique())
 
 # Multiple selection for activity types
 selected_activity_types = st.multiselect('Choose Activity Types', df_projects['ActivityType'].unique())
@@ -54,40 +50,61 @@ filtered_df = filtered_df[filtered_df['ActivityType'].isin(selected_activity_typ
 grouped_df = filtered_df.groupby(['OrganizationID', 'ShortName', 'ActivityType', 'OrganizationURL'])['Contribution'].sum().reset_index()
 grouped_df.rename(columns={'Contribution': 'TotalContribution'}, inplace=True)
 
-# Sort by total contribution
-sorted_df = grouped_df.sort_values(by='TotalContribution', ascending=False)
+# Sort by total contribution for participants
+sorted_df_participants = grouped_df.sort_values(by='TotalContribution', ascending=False)
 
-# Display the dataframe
+# Display the dataframe for participants
 st.write('Table of Partner Contributions per Country')
-st.write(sorted_df, index=False)
+st.write(sorted_df_participants, index=False)
 
-# Save datasets as CSV files
+# Save datasets as CSV files for participants
 st.text('Download the Data Below')
 
 @st.cache
-def convert_to_csv(df):
+def convert_to_csv_participants(df):
     return df.to_csv(index=False).encode('utf-8')
 
-st.download_button(label='Download Partners CSV', data=convert_to_csv(sorted_df), file_name='partners.csv', mime='text/csv')
+st.download_button(label='Download Participants CSV', data=convert_to_csv_participants(sorted_df_participants), file_name='participants.csv', mime='text/csv')
 
-# Plot the graph with evolution of received grants per partners according to activityType
-st.text('Graph with evolution of received grants per partners according to activityType')
+# Generate a new dataframe with project coordinators
+# Filter project coordinators
+df_project_coordinators = df_participants[df_participants['Role'] == 'Coordinator']
+df_project_coordinators = df_project_coordinators[df_project_coordinators['Country'].isin(selected_countries)]
+df_project_coordinators = df_project_coordinators[df_project_coordinators['Year'].isin(selected_years)]
+df_project_coordinators = df_project_coordinators[df_project_coordinators['ActivityType'].isin(selected_activity_types)]
 
+# Display the dataframe for project coordinators
+st.write('Table of Project Coordinators per Country')
+st.write(df_project_coordinators[['ShortName', 'ActivityType', 'ProjectAcronym', 'Name']], index=False)
+
+# Save datasets as CSV files for project coordinators
+st.text('Download the Data Below')
+
+@st.cache
+def convert_to_csv_project_coordinators(df):
+    return df.to_csv(index=False).encode('utf-8')
+
+st.download_button(label='Download Project Coordinators CSV', data=convert_to_csv_project_coordinators(df_project_coordinators), file_name='project_coordinators.csv', mime='text/csv')
+
+# Display a graph showing the evolution of received grants
 # Filter data for the selected countries, years, and activity types
 filtered_data = df_participants[df_participants['Country'].isin(selected_countries)]
 filtered_data = filtered_data[filtered_data['Year'].isin(selected_years)]
 filtered_data = filtered_data[filtered_data['ActivityType'].isin(selected_activity_types)]
 
 # Group by activityType and sum the contributions
-df_grants = filtered_data.groupby(['Country', 'Year', 'ActivityType'])['Contribution'].sum().reset_index()
+df_grants = filtered_data.groupby(['Year', 'ActivityType'])['Contribution'].sum().reset_index()
 
 # Plot the graph
+st.text('Graph with evolution of received grants per partners according to activityType')
 for activity_type in selected_activity_types:
     data = df_grants[df_grants['ActivityType'] == activity_type]
-    st.line_chart(data.set_index('Year')['Contribution'], use_container_width=True)
+    st.line_chart(data.set_index('Year')['Contribution'])
 
 # Close the database connection
 conn.close()
+
+
 
 
 
