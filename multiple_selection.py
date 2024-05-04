@@ -1,9 +1,6 @@
 import pandas as pd
-import numpy as np
 import sqlite3
-from sqlite3 import connect
 import streamlit as st
-from PIL import Image
 
 # Connect to the database
 conn = sqlite3.connect('ecsel_database.db')
@@ -35,7 +32,7 @@ selected_countries = st.multiselect('Choose Countries', sorted(country_acronyms.
 st.write(df_projects.head())  # Print the first few rows to see column names
 
 # Adjust the code to use the correct column name for years
-selected_years = st.multiselect('Choose Years', df_projects['NameOfTheYearColumn'].unique())
+selected_years = st.multiselect('Choose Years', df_projects['ActualYearColumnName'].unique())
 
 # Multiple selection for activity types
 selected_activity_types = st.multiselect('Choose Activity Types', df_projects['ActivityType'].unique())
@@ -87,6 +84,7 @@ for activity_type in selected_activity_types:
 
 # Close the database connection
 conn.close()
+
 
 
 
