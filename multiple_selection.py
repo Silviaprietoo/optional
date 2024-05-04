@@ -4,7 +4,7 @@ import sqlite3
 from sqlite3 import connect
 import streamlit as st
 from PIL import Image
-import seaborn as sns
+
 
 # Load the image
 image = Image.open('Logo-KDT-JU.webp')
