@@ -118,4 +118,5 @@ for country in acronym_c:
 
 
 
+
 conn.close()
