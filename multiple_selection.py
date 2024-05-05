@@ -116,20 +116,15 @@ for country in acronym_c:
     # Filter data for the current country
     pivot_grants_country = pivot_grants[pivot_grants['Acronym'] == country]
     
-    # Filter data for the selected years
+    # Filter data for the selected years and activity types
     pivot_grants_country_selected_years = pivot_grants_country[pivot_grants_country['year'].isin(selected_years)]
+    pivot_grants_country_selected_activity_types = pivot_grants_country_selected_years[selected_activity_types]
     
     # Plot the graph
-    if not pivot_grants_country_selected_years.empty:
-        # Remove 'Acronym' column
-        pivot_grants_country_selected_years = pivot_grants_country_selected_years.drop(columns=['Acronym'])
-        
-        # Group by year and calculate the total ecContribution for each year
-        pivot_grants_country_selected_years_grouped = pivot_grants_country_selected_years.groupby('year').sum()
-        
-        # Plot the graph
-        st.line_chart(pivot_grants_country_selected_years_grouped, use_container_width=True)
+    if not pivot_grants_country_selected_activity_types.empty:
+        st.line_chart(pivot_grants_country_selected_activity_types.set_index('year'), use_container_width=True)
     else:
-        st.write(f"No data available for {country} for the selected years")
+        st.write(f"No data available for {country} for the selected years and activity types")
+
 
 conn.close()
