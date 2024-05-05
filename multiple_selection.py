@@ -95,8 +95,9 @@ st.download_button(label="Project Coordinators CSV", data=convert_projectcoordin
 
 """Optional"""
 import streamlit as st
+import altair as alt
 
-# Function to prepare and plot data
+# Function to prepare data and plot
 def plot_contribution_evolution(df2, acronyms, selected_years, selected_activity_types):
     # Filter data based on selected criteria
     filtered_data = df2[df2['Acronym'].isin(acronyms) & 
@@ -105,34 +106,22 @@ def plot_contribution_evolution(df2, acronyms, selected_years, selected_activity
     
     # Group by year, activity type, and country, and sum up contributions
     grouped_data = filtered_data.groupby(['year', 'activityType', 'Country']).agg({'ecContribution': 'sum'}).reset_index()
-
-    # Create a dictionary to store data for each country and activity type
-    data_dict = {}
-    for country in acronyms:
-        for activity_type in selected_activity_types:
-            # Filter data for the current country and activity type
-            temp_data = grouped_data[(grouped_data['Country'] == country) & 
-                                     (grouped_data['activityType'] == activity_type)]
-            # Extract year and contribution data
-            years = temp_data['year']
-            contributions = temp_data['ecContribution']
-            # Store data in dictionary
-            key = f'{country}_{activity_type}'
-            data_dict[key] = {'years': years, 'contributions': contributions}
     
-    # Plotting
-    for key, data in data_dict.items():
-        st.write(f'**{key}**')
-        st.line_chart(data['contributions'])
+    # Create Altair chart
+    chart = alt.Chart(grouped_data).mark_line().encode(
+        x='year:O',
+        y='ecContribution:Q',
+        color='Country:N',
+        tooltip=['Country', 'activityType', 'ecContribution']
+    ).properties(
+        width=600,
+        height=400
+    ).interactive()
+
+    # Show chart
+    st.altair_chart(chart, use_container_width=True)
 
 # Call the function to plot
 plot_contribution_evolution(df2, acronym_c, selected_years, selected_activity_types)
 
-
 conn.close()
-
-
-
-
-
- 
