@@ -94,7 +94,6 @@ def convert_projectcoordinators(pjc_df):
 st.download_button(label="Project Coordinators CSV", data=convert_projectcoordinators(pjc_df), file_name='projectcoordinators.csv', mime='text/csv')
 
 """Optional"""
-
 import streamlit as st
 
 # Display a graph with evolution of received grants of the partners in a country according to their activityType.
@@ -106,10 +105,13 @@ df_country = df2[df2['Acronym'].isin(acronym_c) & df2['year'].isin(years) & df2[
 # Group by activityType, country, and year and sum the contributions
 df_grants = df_country.groupby(['activityType', 'Country', 'year'])['ecContribution'].sum().reset_index()
 
-# Plot the graph
-for (activity_type, country), data in df_grants.groupby(['activityType', 'Country']):
-    chart_data = data.set_index('year')['ecContribution']
-    st.line_chart(chart_data, label=f"{activity_type} - {country}")
+# Iterate over unique combinations of activityType and Country
+for activity_type in df_grants['activityType'].unique():
+    for country in df_grants['Country'].unique():
+        filtered_data = df_grants[(df_grants['activityType'] == activity_type) & (df_grants['Country'] == country)]
+        if not filtered_data.empty:
+            st.line_chart(filtered_data.set_index('year')['ecContribution'], label=f"{activity_type} - {country}")
+
 
 
 conn.close()
