@@ -116,8 +116,10 @@ for country in acronym_c:
     # Filter data for the current country
     pivot_grants_country = pivot_grants[pivot_grants['Acronym'] == country]
     
-    # Filter data for the selected years and activity types
+    # Filter data for the selected years
     pivot_grants_country_selected_years = pivot_grants_country[pivot_grants_country['year'].isin(selected_years)]
+    
+    # Filter data for the selected activity types
     pivot_grants_country_selected_activity_types = pivot_grants_country_selected_years[selected_activity_types]
     
     # Plot the graph
@@ -125,6 +127,7 @@ for country in acronym_c:
         st.line_chart(pivot_grants_country_selected_activity_types.set_index('year'), use_container_width=True)
     else:
         st.write(f"No data available for {country} for the selected years and activity types")
+
 
 
 conn.close()
