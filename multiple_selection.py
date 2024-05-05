@@ -107,10 +107,11 @@ df_grants = df_country.groupby(['year', 'activityType', 'shortName'])['ecContrib
 pivot_grants = df_grants.pivot_table(index=['year', 'shortName'], columns='activityType', values='ecContribution', aggfunc='sum').reset_index()
 
 # Plot the graph
-st.title('Evolution of received grants per partners according to Activity Type')
+st.title('Evolution of received grants per partner according to Activity Type')
 for activity_type in activity_types:
     pivot_grants_activity_type = pivot_grants[['year', 'shortName', activity_type]].dropna()
-    st.line_chart(pivot_grants_activity_type.set_index('year').groupby('shortName')[activity_type].sum(), use_container_width=True)
+    chart_data = pivot_grants_activity_type.set_index('year').groupby('shortName')[activity_type].sum()
+    st.line_chart(chart_data, use_container_width=True, key=activity_type, legend_label=activity_type)
 
 
 conn.close()
