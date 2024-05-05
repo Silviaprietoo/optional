@@ -44,7 +44,7 @@ country_acronyms = {'Belgium': 'BE', 'Bulgaria': 'BG', 'Czechia': 'CZ', 'Denmark
                     'Finland': 'FI', 'Sweden': 'SE'}
 countnames = st.multiselect('Choose Countries', sorted(country_acronyms.keys()))  # Input by the user of the name of the country or countries
 years = st.multiselect('Choose Years', sorted(df_project['year'].unique()))
-activity_types = st.multiselect('Choose Activity Types', sorted(df_project['activityType'].unique()))
+activity_types = st.multiselect('Choose Activity Types', sorted(df_participants['activityType'].unique()))
 
 def countries_to_acronyms(countnames):  # Defining a function
     acronyms = []
