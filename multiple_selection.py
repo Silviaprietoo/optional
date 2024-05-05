@@ -94,20 +94,17 @@ def convert_projectcoordinators(pjc_df):
 st.download_button(label="Project Coordinators CSV", data=convert_projectcoordinators(pjc_df), file_name='projectcoordinators.csv', mime='text/csv')
 
 """Optional"""
+import streamlit as st 
 
-import streamlit as st
+# Plotting the evolution of received grants per partner by activity type, divided by countries and years
+st.text('Evolution of Grants per Partner')
+filtered_data = df2[(df2['Acronym'].isin(acronym_c)) & (df2['activityType'].isin(activity_types)) & (df2['year'].isin(selected_years))]
+grouped_data = filtered_data.groupby(['name', 'activityType', 'Acronym', 'year']).agg({'ecContribution': 'sum'}).reset_index()
 
-# Filter data based on user inputs
-filtered_df = df2[df2['Acronym'].isin(acronym_c) & df2['year'].isin(selected_years) & df2['activityType'].isin(activity_types)]
-
-# Group by year, activityType, and country, then sum the contributions
-grouped_df = filtered_df.groupby(['year', 'activityType', 'Country'])['ecContribution'].sum().reset_index()
-
-# Pivot the data
-pivot_df = grouped_df.pivot_table(index=['year', 'Country'], columns='activityType', values='ecContribution', aggfunc='sum').reset_index()
-
-# Plot the graph
-st.line_chart(pivot_df.set_index('year'))
+for country in acronym_c:
+    for activity_type in activity_types:
+        subset = grouped_data[(grouped_data['Acronym'] == country) & (grouped_data['activityType'] == activity_type)]
+        st.line_chart(subset.set_index('year')['ecContribution'], label=f"{country} - {activity_type}")
 
 
 conn.close()
