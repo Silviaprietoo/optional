@@ -100,25 +100,25 @@ import streamlit as st
 # Display a graph with the evolution of received grants in selected countries over the years, grouped by activity types.
 st.title('Evolution of received grants per country and activity type')
 
-# Filter data for the selected countries
+# Filter data for the selected countries and years
 df_countries_selected = df2[df2['Acronym'].isin(acronym_c)]
+df_grants_filtered = df_countries_selected[df_countries_selected['year'].isin(selected_years)]
 
 # Group by year, activityType, and Acronym, then sum the contributions
-df_grants = df_countries_selected.groupby(['year', 'activityType', 'Acronym'])['ecContribution'].sum().reset_index()
+df_grants = df_grants_filtered.groupby(['year', 'activityType', 'Acronym'])['ecContribution'].sum().reset_index()
 
 # Pivot the data
-pivot_grants = df_grants.pivot_table(index=['year', 'Acronym'], columns='activityType', values='ecContribution', aggfunc='sum').reset_index()
+pivot_grants = df_grants.pivot_table(index=['year'], columns=['activityType', 'Acronym'], values='ecContribution', aggfunc='sum').reset_index()
 
 # Print debug information
 st.write("Pivot grants:")
 st.write(pivot_grants)
 
 # Plot the graph
-for activity_type in selected_activity_types:
-    st.write(f"Selected activity type: {activity_type}")
-    if activity_type in pivot_grants.columns:
-        st.line_chart(pivot_grants.pivot(index='year', columns='Acronym', values=activity_type), f'Evolution of {activity_type} grants')
-    else:
-        st.write(f"No data available for {activity_type}")
+if not pivot_grants.empty:
+    st.line_chart(pivot_grants.set_index('year'))
+else:
+    st.write("No data available for the selected countries and years.")
+
 
 conn.close()
