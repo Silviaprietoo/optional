@@ -97,24 +97,24 @@ st.download_button(label="Project Coordinators CSV", data=convert_projectcoordin
 #Optional 
 import streamlit as st
 
-# Filter data based on selected countries, years, and activity types
-df_filtered = df2[df2['Acronym'].isin(acronym_c) & df2['year'].isin(selected_years) & df2['activityType'].isin(activity_types)]
-
-# Group by year, activityType, and country, then sum the contributions
-df_grants = df_filtered.groupby(['Acronym', 'year', 'activityType'])['ecContribution'].sum().reset_index()
-
-# For each selected country, create a separate line chart
+# For each selected country, display a graph showing the evolution of received grants per activity type
 for country in acronym_c:
-    st.subheader(f'Evolution of received grants per activity type in {country}')
+    st.title(f'Evolution of received grants per partners in {country} according to Activity Type')
     
-    # Filter data for the selected country
-    df_country = df_grants[df_grants['Acronym'] == country]
+    # Filter data for the selected country, years, and activity types
+    df_country_filtered = df2[(df2['Acronym'] == country) & 
+                              (df2['year'].isin(selected_years)) & 
+                              (df2['activityType'].isin(activity_types))]
+    
+    # Group by activityType and year, then sum the contributions
+    df_grants = df_country_filtered.groupby(['activityType', 'year'])['ecContribution'].sum().reset_index()
     
     # Pivot the data
-    pivot_grants = df_country.pivot(index='year', columns='activityType', values='ecContribution')
+    pivot_grants = df_grants.pivot(index='year', columns='activityType', values='ecContribution')
     
     # Plot the graph
     st.line_chart(pivot_grants)
+
 
 
 
