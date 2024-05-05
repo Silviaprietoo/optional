@@ -62,4 +62,41 @@ participants = display_dataframe(df2,acronym_c)
 print(participants)
 ### st.write(participants)
 
+import streamlit as st
+import altair as alt
+
+# Function to filter data by country and activity type
+def filter_data(df, country, activity_type):
+    filtered_data = df[(df['Acronym'] == country) & (df['activityType'] == activity_type)]
+    return filtered_data
+
+# Function to display the graph
+def display_graph(data):
+    chart = alt.Chart(data).mark_line().encode(
+        x='name',
+        y='ecContribution',
+        color='activityType',
+        tooltip=['name', 'ecContribution', 'activityType']
+    ).properties(
+        title='Evolution of Received Grants per Partner Grouped by Activity Type',
+        width=600,
+        height=400
+    ).interactive()
+    st.altair_chart(chart, use_container_width=True)
+
+# Call functions to get data and display graph
+def main():
+    # Filter data for selected country and activity type
+    selected_country = acronym_c
+    selected_activity_type = 'your_selected_activity_type'
+    filtered_data = filter_data(df2, selected_country, selected_activity_type)
+
+    # Display graph
+    st.title('Evolution of Received Grants per Partner Grouped by Activity Type')
+    display_graph(filtered_data)
+
+if __name__ == "__main__":
+    main()
+
+
 conn.close()
