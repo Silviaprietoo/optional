@@ -98,26 +98,28 @@ import streamlit as st
 import altair as alt
 
 # Plotting the evolution of received grants per partner by activity type, divided by countries and years
-st.text('Evolution of Grants per Partner')
 
-filtered_data = df2[(df2['Acronym'].isin(acronym_c)) & (df2['activityType'].isin(activity_types)) & (df2['year'].isin(selected_years))]
+# Filter data
+filtered_data = df2[(df2['Acronym'].isin(acronym_c)) & 
+                    (df2['activityType'].isin(activity_types)) & 
+                    (df2['year'].isin(selected_years))]
+
+# Group by required columns and sum the ecContribution
 grouped_data = filtered_data.groupby(['name', 'activityType', 'Acronym', 'year']).agg({'ecContribution': 'sum'}).reset_index()
 
-charts = []
-for country in acronym_c:
-    for activity_type in activity_types:
-        subset = grouped_data[(grouped_data['Acronym'] == country) & (grouped_data['activityType'] == activity_type)]
-        chart = alt.Chart(subset).mark_line().encode(
-            x='year',
-            y='ecContribution',
-            color='activityType',
-            tooltip=['name', 'year', 'ecContribution']
-        ).properties(
-            title=f"Evolution of Grants for {country} - {activity_type}"
-        ).interactive()
-        charts.append(chart)
+# Define the chart
+chart = alt.Chart(grouped_data).mark_line().encode(
+    x='year',
+    y='ecContribution',
+    color='Acronym',
+    tooltip=['name', 'year', 'ecContribution']
+).properties(
+    title='Evolution of Grants per Partner by Country and Activity Type'
+).interactive()
 
-st.altair_chart(alt.layer(*charts), use_container_width=True)
+# Display the chart
+st.altair_chart(chart, use_container_width=True)
+
 
 
 
