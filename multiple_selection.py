@@ -94,34 +94,20 @@ def convert_projectcoordinators(pjc_df):
 st.download_button(label="Project Coordinators CSV", data=convert_projectcoordinators(pjc_df), file_name='projectcoordinators.csv', mime='text/csv')
 
 """Optional"""
+
 import streamlit as st
-import altair as alt
 
-# Function to prepare data and plot
-def plot_contribution_evolution(df2, acronyms, selected_years, selected_activity_types):
-    # Filter data based on selected criteria
-    filtered_data = df2[df2['Acronym'].isin(acronyms) & 
-                        df2['activityType'].isin(selected_activity_types) & 
-                        df2['year'].isin(selected_years)]
-    
-    # Group by year, activity type, and country, and sum up contributions
-    grouped_data = filtered_data.groupby(['year', 'activityType', 'Country']).agg({'ecContribution': 'sum'}).reset_index()
-    
-    # Create Altair chart
-    chart = alt.Chart(grouped_data).mark_line().encode(
-        x='year:O',
-        y='ecContribution:Q',
-        color='Country:N',
-        tooltip=['Country', 'activityType', 'ecContribution']
-    ).properties(
-        width=600,
-        height=400
-    ).interactive()
+# Filter data based on user inputs
+filtered_df = df2[df2['Acronym'].isin(acronym_c) & df2['year'].isin(selected_years) & df2['activityType'].isin(activity_types)]
 
-    # Show chart
-    st.altair_chart(chart, use_container_width=True)
+# Group by year, activityType, and country, then sum the contributions
+grouped_df = filtered_df.groupby(['year', 'activityType', 'Country'])['ecContribution'].sum().reset_index()
 
-# Call the function to plot
-plot_contribution_evolution(df2, acronym_c, selected_years, selected_activity_types)
+# Pivot the data
+pivot_df = grouped_df.pivot_table(index=['year', 'Country'], columns='activityType', values='ecContribution', aggfunc='sum').reset_index()
+
+# Plot the graph
+st.line_chart(pivot_df.set_index('year'))
+
 
 conn.close()
