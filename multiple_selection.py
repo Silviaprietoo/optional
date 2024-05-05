@@ -94,29 +94,25 @@ def convert_projectcoordinators(pjc_df):
 st.download_button(label="Project Coordinators CSV", data=convert_projectcoordinators(pjc_df), file_name='projectcoordinators.csv', mime='text/csv')
 
 #Optional
-import streamlit as st
-
-# Display a graph with the evolution of received grants per partners according to Activity Type for the selected countries
 st.title('Evolution of received grants per partners according to Activity Type')
 
-# Filter data for the selected countries, years, and activity types
-df_filtered = df2[(df2['Acronym'].isin(acronym_c)) & 
-                  (df2['year'].isin(selected_years)) & 
-                  (df2['activityType'].isin(activity_types))]
-
-# Group by country, activityType, and year, then sum the contributions
-df_grants = df_filtered.groupby(['Acronym', 'activityType', 'year'])['ecContribution'].sum().reset_index()
-
-# Pivot the data
-pivot_grants = df_grants.pivot_table(index=['year', 'activityType'], columns='Acronym', values='ecContribution').reset_index()
-
-# Plot the graph
-st.line_chart(pivot_grants.set_index('year'))
-
-# Add legend
-st.text("Legend:")
+# For each selected country, filter data, group by activityType and year, and plot the graph
 for country in acronym_c:
-    st.text(f"{country}: {country_acronyms[country]}")
+    st.subheader(f'Evolution of received grants per partners in {country} according to Activity Type')
+    
+    # Filter data for the selected country, years, and activity types
+    df_country_filtered = df2[(df2['Acronym'] == country) & 
+                              (df2['year'].isin(selected_years)) & 
+                              (df2['activityType'].isin(activity_types))]
+    
+    # Group by activityType and year, then sum the contributions
+    df_grants = df_country_filtered.groupby(['activityType', 'year'])['ecContribution'].sum().reset_index()
+    
+    # Pivot the data
+    pivot_grants = df_grants.pivot(index='year', columns='activityType', values='ecContribution')
+    
+    # Plot the graph with a label for the selected country
+    st.line_chart(pivot_grants)
 
 
 conn.close()
