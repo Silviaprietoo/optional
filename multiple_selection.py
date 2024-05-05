@@ -101,19 +101,10 @@ import streamlit as st
 # Display a graph with evolution of received grants of the partners in selected countries according to their activityType.
 st.title('Evolution of received grants per partners according to Activity Type')
 
-# Multiselect widget for selecting countries
-selected_countries = st.multiselect('Select countries', df2['Acronym'].unique())
-
-# Multiselect widget for selecting years
-selected_years = st.multiselect('Select years', df2['year'].unique())
-
-# Multiselect widget for selecting activity types
-selected_activity_types = st.multiselect('Select activity types', df2['activityType'].unique())
-
-# Filter data based on selected inputs
-df_filtered = df2[(df2['Acronym'].isin(selected_countries)) &
-                  (df2['year'].isin(selected_years)) &
-                  (df2['activityType'].isin(selected_activity_types))]
+# Filter data based on selected countries, years, and activity types
+df_filtered = df2[df2['Acronym'].isin(selected_countries) &
+                  df2['year'].isin(selected_years) &
+                  df2['activityType'].isin(selected_activity_types)]
 
 if not df_filtered.empty:
     # Group by activityType and year, then sum the contributions
@@ -126,8 +117,5 @@ if not df_filtered.empty:
     st.line_chart(pivot_grants)
 else:
     st.write("No data available for the selected filters.")
-
-
-
 
 conn.close()
