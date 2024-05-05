@@ -95,7 +95,7 @@ st.download_button(label="Project Coordinators CSV", data=convert_projectcoordin
 
 """Optional"""
 import streamlit as st
-
+st.title('Evolution of received grants per partners in the selected countries & years according to selected Activity Type')
 # Filter data for the selected countries, activity types, and years
 filtered_data = df2[(df2['Acronym'].isin(acronym_c)) & 
                     (df2['activityType'].isin(activity_types)) & 
