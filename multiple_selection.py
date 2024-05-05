@@ -97,37 +97,15 @@ st.download_button(label="Project Coordinators CSV", data=convert_projectcoordin
 # Optional 
 import streamlit as st
 
-# Display a graph with the evolution of received grants in selected countries over the years, grouped by activity types.
-st.title('Evolution of received grants per country and activity type')
+for country in countnames:
+    st.subheader(f"Total Contributions Evolution for {country}")
+    selected_country_data = df2[df2['Country'] == country]
 
-# Filter data for the selected countries
-df_countries_selected = df2[df2['Acronym'].isin(acronym_c)]
+    # Group by year and activity type to get total contributions
+    contributions_by_year_activity = selected_country_data.groupby(['year', 'activityType'])['ecContribution'].sum().unstack()
 
-# Group by year, activityType, and Acronym, then sum the contributions
-df_grants = df_countries_selected.groupby(['year', 'activityType', 'Acronym'])['ecContribution'].sum().reset_index()
-
-# Pivot the data
-pivot_grants = df_grants.pivot_table(index=['year', 'Acronym'], columns='activityType', values='ecContribution', aggfunc='sum').reset_index()
-
-# Plot the graph for each selected country
-for country in acronym_c:
-    st.subheader(f'Evolution of received grants in {country}')
-    
-    # Filter data for the current country
-    pivot_grants_country = pivot_grants[pivot_grants['Acronym'] == country]
-    
-    # Filter data for the selected years
-    pivot_grants_country_selected_years = pivot_grants_country[pivot_grants_country['year'].isin(selected_years)]
-    
-    # Filter data for the selected activity types
-    pivot_grants_country_selected_activity_types = pivot_grants_country_selected_years[selected_activity_types]
-    
-    # Plot the graph
-    if not pivot_grants_country_selected_activity_types.empty:
-        st.line_chart(pivot_grants_country_selected_activity_types.set_index('year'), use_container_width=True)
-    else:
-        st.write(f"No data available for {country} for the selected years and activity types")
-
+    # Plotting
+    st.line_chart(contributions_by_year_activity)
 
 
 conn.close()
