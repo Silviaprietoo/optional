@@ -95,32 +95,22 @@ st.download_button(label="Project Coordinators CSV", data=convert_projectcoordin
 
 """Optional"""
 import streamlit as st 
-import altair as alt
 
-# Plotting the evolution of received grants per partner by activity type, divided by countries and years
+# Display a graph with the evolution of received grants of the partners in selected countries according to their activityType.
 
-# Filter data
+# Filter data for the selected countries, activity types, and years
 filtered_data = df2[(df2['Acronym'].isin(acronym_c)) & 
                     (df2['activityType'].isin(activity_types)) & 
                     (df2['year'].isin(selected_years))]
 
-# Group by required columns and sum the ecContribution
-grouped_data = filtered_data.groupby(['name', 'activityType', 'Acronym', 'year']).agg({'ecContribution': 'sum'}).reset_index()
+# Group by activityType, year, and country, then sum the contributions
+df_grants = filtered_data.groupby(['activityType', 'year', 'Acronym'])['ecContribution'].sum().reset_index()
 
-# Define the chart
-chart = alt.Chart(grouped_data).mark_line().encode(
-    x='year',
-    y='ecContribution',
-    color='Acronym',
-    tooltip=['name', 'year', 'ecContribution']
-).properties(
-    title='Evolution of Grants per Partner by Country and Activity Type'
-).interactive()
+# Pivot the data
+pivot_grants = df_grants.pivot_table(index='year', columns=['activityType', 'Acronym'], values='ecContribution', aggfunc='sum')
 
-# Display the chart
-st.altair_chart(chart, use_container_width=True)
-
-
+# Plot the graph
+st.line_chart(pivot_grants)
 
 
 conn.close()
