@@ -106,13 +106,11 @@ df_country = df2[df2['Acronym'].isin(acronym_c) & df2['year'].isin(years) & df2[
 df_grants = df_country.groupby(['activityType', 'Country', 'year'])['ecContribution'].sum().reset_index()
 
 # Plot the graph
-for country in df_grants['Country'].unique():
-    country_data = df_grants[df_grants['Country'] == country]
-    for activity_type in country_data['activityType'].unique():
-        activity_data = country_data[country_data['activityType'] == activity_type]
-        st.line_chart(activity_data.set_index('year')['ecContribution'], label=f"{activity_type} - {country}")
-
-
+for activity_type in df_grants['activityType'].unique():
+    activity_data = df_grants[df_grants['activityType'] == activity_type]
+    for country in activity_data['Country'].unique():
+        country_data = activity_data[activity_data['Country'] == country]
+        st.line_chart(country_data.set_index('year')['ecContribution'], label=f"{activity_type} - {country}")
 
 
 conn.close()
