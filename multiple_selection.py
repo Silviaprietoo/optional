@@ -96,21 +96,37 @@ st.download_button(label="Project Coordinators CSV", data=convert_projectcoordin
 """Optional"""
 import streamlit as st
 
-# Display a graph with evolution of received grants of the partners in a country according to their activityType.
-st.text('Graph with evolution of received grants per partners according to activityType and year')
+# Function to prepare and plot data
+def plot_contribution_evolution(df2, acronyms, selected_years, selected_activity_types):
+    # Filter data based on selected criteria
+    filtered_data = df2[df2['Acronym'].isin(acronyms) & 
+                        df2['activityType'].isin(selected_activity_types) & 
+                        df2['year'].isin(selected_years)]
+    
+    # Group by year, activity type, and country, and sum up contributions
+    grouped_data = filtered_data.groupby(['year', 'activityType', 'Country']).agg({'ecContribution': 'sum'}).reset_index()
 
-# Filter data for the selected countries, years, and activity types
-df_country = df2[df2['Acronym'].isin(acronym_c) & df2['year'].isin(years) & df2['activityType'].isin(activity_types)]
+    # Create a dictionary to store data for each country and activity type
+    data_dict = {}
+    for country in acronyms:
+        for activity_type in selected_activity_types:
+            # Filter data for the current country and activity type
+            temp_data = grouped_data[(grouped_data['Country'] == country) & 
+                                     (grouped_data['activityType'] == activity_type)]
+            # Extract year and contribution data
+            years = temp_data['year']
+            contributions = temp_data['ecContribution']
+            # Store data in dictionary
+            key = f'{country}_{activity_type}'
+            data_dict[key] = {'years': years, 'contributions': contributions}
+    
+    # Plotting
+    for key, data in data_dict.items():
+        st.write(f'**{key}**')
+        st.line_chart(data['contributions'])
 
-# Group by activityType, country, and year and sum the contributions
-df_grants = df_country.groupby(['activityType', 'Country', 'year'])['ecContribution'].sum().reset_index()
-
-# Plot the graph
-for activity_type in df_grants['activityType'].unique():
-    activity_data = df_grants[df_grants['activityType'] == activity_type]
-    for country in activity_data['Country'].unique():
-        country_data = activity_data[activity_data['Country'] == country]
-        st.line_chart(country_data.set_index('year')['ecContribution'], label=f"{activity_type} - {country}")
+# Call the function to plot
+plot_contribution_evolution(df2, acronym_c, selected_years, selected_activity_types)
 
 
 conn.close()
