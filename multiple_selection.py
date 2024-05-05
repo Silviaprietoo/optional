@@ -104,12 +104,20 @@ st.text('Graph with evolution of received grants per partners according to activ
 df_country = df2[df2['Acronym'].isin(acronym_c) & df2['year'].isin(years) & df2['activityType'].isin(activity_types)]
 
 # Group by activityType and sum the contributions
-df_grants = df_country.groupby('activityType')['ecContribution'].sum().reset_index()
+df_grants = df_country.groupby(['activityType', 'Country', 'year'])['ecContribution'].sum().reset_index()
 
 # Plot the graph with customized y-axis range
-st.bar_chart(df_grants.set_index('activityType'))
+fig, ax = plt.subplots()
+for i, (activity_type, data) in enumerate(df_grants.groupby('activityType')):
+    ax.bar(data.index + i * 0.2, data['ecContribution'], width=0.2, label=activity_type)
+
+ax.set_xticks(range(len(df_grants)))
+ax.set_xticklabels([f"{country} - {year}" for country, year in zip(df_grants['Country'], df_grants['year'])], rotation=45)
+ax.legend()
+st.pyplot(fig)
 
 conn.close()
+
 
 
 
