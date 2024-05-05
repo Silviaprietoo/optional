@@ -103,15 +103,15 @@ st.title('Evolution of received grants per country and activity type')
 # Filter data for the selected countries
 df_countries_selected = df2[df2['Acronym'].isin(acronym_c)]
 
-# Group by activityType, year, and country, then sum the contributions
-df_grants = df_countries_selected.groupby(['activityType', 'year', 'Acronym'])['ecContribution'].sum().reset_index()
+# Group by year, activityType, and Acronym, then sum the contributions
+df_grants = df_countries_selected.groupby(['year', 'activityType', 'Acronym'])['ecContribution'].sum().reset_index()
 
 # Pivot the data
 pivot_grants = df_grants.pivot_table(index=['year', 'Acronym'], columns='activityType', values='ecContribution', aggfunc='sum').reset_index()
 
 # Plot the graph
 for activity_type in selected_activity_types:
-    st.line_chart(pivot_grants.pivot(index='year', columns='Acronym', values=activity_type))
+    st.line_chart(pivot_grants.pivot(index='year', columns='Acronym', values=activity_type), f'Evolution of {activity_type} grants')
 
 
 conn.close()
