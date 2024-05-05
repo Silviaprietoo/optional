@@ -114,7 +114,7 @@ st.line_chart(pivot_grants.set_index('year'))
 # Add legend
 st.text("Legend:")
 for country in acronym_c:
-    st.text(f"{country}: {country_acronyms[country]}")
+    st.text(f"{country}: {country_acronyms[countname]}")
 
 
 conn.close()
