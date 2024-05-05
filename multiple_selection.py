@@ -95,20 +95,38 @@ st.download_button(label="Project Coordinators CSV", data=convert_projectcoordin
 
 """Optional"""
 import streamlit as st
-st.title('Evolution of received grants per partners in the selected countries & years according to selected Activity Types')
-# Filter data for the selected countries, activity types, and years
-filtered_data = df2[(df2['Acronym'].isin(acronym_c)) & 
-                    (df2['activityType'].isin(activity_types)) & 
-                    (df2['year'].isin(selected_years))]
 
-# Group by partner, activityType, and year, then sum the contributions
-df_grants = filtered_data.groupby(['name', 'activityType', 'year'])['ecContribution'].sum().reset_index()
+# Assuming df2 is your DataFrame containing the data
 
-# Pivot the data
-pivot_grants = df_grants.pivot_table(index='year', columns=['name', 'activityType'], values='ecContribution', aggfunc='sum')
+# Display a graph with evolution of received grants of the partners in selected countries according to their activityType.
+st.title('Evolution of received grants per partners according to Activity Type')
 
-# Plot the graph
-st.line_chart(pivot_grants)
+# Multiselect widget for selecting countries
+selected_countries = st.multiselect('Select countries', df2['Acronym'].unique())
+
+# Multiselect widget for selecting years
+selected_years = st.multiselect('Select years', df2['year'].unique())
+
+# Multiselect widget for selecting activity types
+selected_activity_types = st.multiselect('Select activity types', df2['activityType'].unique())
+
+# Filter data based on selected inputs
+df_filtered = df2[(df2['Acronym'].isin(selected_countries)) &
+                  (df2['year'].isin(selected_years)) &
+                  (df2['activityType'].isin(selected_activity_types))]
+
+if not df_filtered.empty:
+    # Group by activityType and year, then sum the contributions
+    df_grants = df_filtered.groupby(['Acronym', 'year', 'activityType'])['ecContribution'].sum().reset_index()
+
+    # Pivot the data
+    pivot_grants = df_grants.pivot_table(index=['Acronym', 'year'], columns='activityType', values='ecContribution', fill_value=0)
+
+    # Plot the graph
+    st.line_chart(pivot_grants)
+else:
+    st.write("No data available for the selected filters.")
+
 
 
 
