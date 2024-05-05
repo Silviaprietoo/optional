@@ -43,8 +43,8 @@ country_acronyms = {'Belgium': 'BE', 'Bulgaria': 'BG', 'Czechia': 'CZ', 'Denmark
                     'Poland': 'PL', 'Portugal': 'PT', 'Romania': 'RO', 'Slovenia': 'SI', 'Slovakia': 'SK',
                     'Finland': 'FI', 'Sweden': 'SE'}
 countnames = st.multiselect('Choose Countries', sorted(country_acronyms.keys()))  # Input by the user of the name of the country or countries
-years = st.multiselect('Choose Years', sorted(df_project['year'].unique()))
-activity_types = st.multiselect('Choose Activity Types', sorted(df_participants['activityType'].unique()))
+years = st.multiselect('Choose Years', sorted(df_project['year'].unique()), format_func=lambda x: str(x))  # Format years as strings for display
+activity_types = st.multiselect('Choose Activity Types', sorted(df_project['activityType'].unique()))
 
 def countries_to_acronyms(countnames):  # Defining a function
     acronyms = []
@@ -54,7 +54,12 @@ def countries_to_acronyms(countnames):  # Defining a function
     return acronyms
 
 acronym_c = countries_to_acronyms(countnames)
-st.write('The selected countries are:', acronym_c)  # Calling the function to display the acronyms
+selected_years = [str(year) for year in years]  # Convert selected years to strings for display
+selected_activity_types = [f"'{activity_type}'" for activity_type in activity_types]  # Format activity types for display
+
+st.write('The selected countries are:', ', '.join(acronym_c))  # Display selected countries as a string
+st.write('The selected years are:', ', '.join(selected_years))  # Display selected years as a string
+st.write('The selected activity types are:', ', '.join(selected_activity_types))  # Display selected activity types as a string
 
 st.text('Table of Partner Contributions per Country')
 def display_dataframe(df2, acronyms):
@@ -105,6 +110,7 @@ df_grants = df_country.groupby('activityType')['ecContribution'].sum().reset_ind
 st.bar_chart(df_grants.set_index('activityType'))
 
 conn.close()
+
 
 
 
