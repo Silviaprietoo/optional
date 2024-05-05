@@ -109,9 +109,16 @@ df_grants = df_countries_selected.groupby(['year', 'activityType', 'Acronym'])['
 # Pivot the data
 pivot_grants = df_grants.pivot_table(index=['year', 'Acronym'], columns='activityType', values='ecContribution', aggfunc='sum').reset_index()
 
+# Print debug information
+st.write("Pivot grants:")
+st.write(pivot_grants)
+
 # Plot the graph
 for activity_type in selected_activity_types:
-    st.line_chart(pivot_grants.pivot(index='year', columns='Acronym', values=activity_type), f'Evolution of {activity_type} grants')
-
+    st.write(f"Selected activity type: {activity_type}")
+    if activity_type in pivot_grants.columns:
+        st.line_chart(pivot_grants.pivot(index='year', columns='Acronym', values=activity_type), f'Evolution of {activity_type} grants')
+    else:
+        st.write(f"No data available for {activity_type}")
 
 conn.close()
