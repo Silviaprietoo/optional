@@ -114,4 +114,5 @@ for activity_type in activity_types:
     st.line_chart(chart_data, use_container_width=True, key=activity_type, legend_label=activity_type)
 
 
+
 conn.close()
