@@ -101,11 +101,15 @@ for country in countnames:
     st.subheader(f"Total Contributions Evolution for {country}")
     selected_country_data = df2[df2['Country'] == country]
 
+    # Filter data for selected years
+    selected_country_data = selected_country_data[selected_country_data['year'].isin(selected_years)]
+
     # Group by year and activity type to get total contributions
     contributions_by_year_activity = selected_country_data.groupby(['year', 'activityType'])['ecContribution'].sum().unstack()
 
     # Plotting
     st.line_chart(contributions_by_year_activity)
+
 
 
 conn.close()
