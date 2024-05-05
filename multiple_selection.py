@@ -111,6 +111,8 @@ for (activity_type, country), data in df_grants.groupby(['activityType', 'Countr
     chart_data = data.set_index('year')['ecContribution']
     st.line_chart(chart_data, label=f"{activity_type} - {country}")
 
+conn.close()
+
 
 
 
