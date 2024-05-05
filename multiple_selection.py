@@ -119,9 +119,10 @@ for country in acronym_c:
     # Plot the graph
     if not pivot_grants_country.empty:
         chart_data = pivot_grants_country.set_index('year')
-        st.line_chart(chart_data)
+        st.line_chart(chart_data, use_container_width=True)
     else:
         st.write(f"No data available for {country}")
+
 
 
 
