@@ -102,20 +102,18 @@ import streamlit as st
 st.title('Evolution of received grants per partners according to Activity Type')
 
 # Filter data based on selected countries, years, and activity types
-df_filtered = df2[df2['Acronym'].isin(selected_countries) &
-                  df2['year'].isin(selected_years) &
+df_filtered = df2[df2['Acronym'].isin(acronym_c) &
+                  df2['year'].astype(str).isin(selected_years) &
                   df2['activityType'].isin(selected_activity_types)]
 
-if not df_filtered.empty:
-    # Group by activityType and year, then sum the contributions
-    df_grants = df_filtered.groupby(['Acronym', 'year', 'activityType'])['ecContribution'].sum().reset_index()
+# Group by country, year, and activityType, then sum the contributions
+df_grants = df_filtered.groupby(['Acronym', 'year', 'activityType'])['ecContribution'].sum().reset_index()
 
-    # Pivot the data
-    pivot_grants = df_grants.pivot_table(index=['Acronym', 'year'], columns='activityType', values='ecContribution', fill_value=0)
+# Pivot the data
+pivot_grants = df_grants.pivot_table(index=['Acronym', 'year'], columns='activityType', values='ecContribution', fill_value=0)
 
-    # Plot the graph
-    st.line_chart(pivot_grants)
-else:
-    st.write("No data available for the selected filters.")
+# Plot the graph
+st.line_chart(pivot_grants)
+
 
 conn.close()
