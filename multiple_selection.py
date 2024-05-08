@@ -53,25 +53,34 @@ st.write('The selected years are:', ', '.join(selected_years))  # Display select
 st.write('The selected activity types are:', ', '.join(selected_activity_types))  # Display selected activity types as a string
 
 st.text('Table of Partner Contributions per Country')
-def display_dataframe(df2, acronyms, activity_types):
-    df2 = df2[df2['Acronym'].isin(acronyms) & df2['activityType'].isin(activity_types)]
-    df2_part = df2.groupby(['name','shortName', 'activityType', 'organizationURL']).agg({'ecContribution':['sum']})
+
+def display_dataframe(df2, acronyms, activity_types, selected_years):
+    df2_filtered = df2[df2['Acronym'].isin(acronyms) & 
+                       df2['activityType'].isin(activity_types) &
+                       df2['year'].isin(selected_years)]
+    df2_part = df2_filtered.groupby(['name','shortName', 'activityType', 'organizationURL']).agg({'ecContribution':['sum']})
     df2_part = df2_part.reset_index()
     df2_part = df2_part.sort_values(by=('ecContribution', 'sum'), ascending=False)  # Sorting by sum of ecContribution in descending order
     return df2_part
 
-participants = display_dataframe(df2, acronym_c, activity_types)
+participants = display_dataframe(df2, acronym_c, activity_types, selected_years)
 st.write(participants, index=False)
 
-# Part 4: generate a new project dataframe with project coordinators from the selected countries and order it in ascending order by 'shortName'
 st.text('Table of Project Coordinators per Country')
-df2 = df2[df2['Acronym'].isin(acronym_c) & df2['activityType'].isin(activity_types)]
-df2['Coordinator'] = (df2['role'] == 'coordinator') * 1
-pjc_df = df2.groupby(['name','shortName', 'activityType', 'organizationURL']).agg({'Coordinator': ['sum']})
-pjc_df = pjc_df.reset_index()
-pjc_df = pjc_df.sort_values('shortName')  # Ordered by shortName
 
-st.write(pjc_df, index=False)
+def display_project_coordinators(df2, acronyms, activity_types, selected_years):
+    df2_filtered = df2[df2['Acronym'].isin(acronyms) & 
+                       df2['activityType'].isin(activity_types) &
+                       df2['year'].isin(selected_years)]
+    df2_filtered['Coordinator'] = (df2_filtered['role'] == 'coordinator') * 1
+    pjc_df = df2_filtered.groupby(['name','shortName', 'activityType', 'organizationURL']).agg({'Coordinator': ['sum']})
+    pjc_df = pjc_df.reset_index()
+    pjc_df = pjc_df.sort_values('shortName')  # Ordered by shortName
+    return pjc_df
+
+project_coordinators = display_project_coordinators(df2, acronym_c, activity_types, selected_years)
+st.write(project_coordinators, index=False)
+
 
 st.text('Download the Data Below')
 # The system shall save the generated datasets (participants, and project coordinators) in CSV files. (There should be 2 buttons to download data).
