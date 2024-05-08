@@ -52,19 +52,26 @@ st.write('The selected countries are:', ', '.join(acronym_c))  # Display selecte
 st.write('The selected years are:', ', '.join(selected_years))  # Display selected years as a string
 st.write('The selected activity types are:', ', '.join(selected_activity_types))  # Display selected activity types as a string
 
-st.text('Table of Partner Contributions per Country')
-
-def display_dataframe(df2, acronyms, activity_types, selected_years):
-    df2_filtered = df2[df2['Acronym'].isin(acronyms) & 
-                       df2['activityType'].isin(activity_types) &
-                       df2['year'].isin(selected_years)]
-    df2_part = df2_filtered.groupby(['name','shortName', 'activityType', 'organizationURL']).agg({'ecContribution':['sum']})
+ef display_dataframe(df2, acronyms, activity_types):
+    df2 = df2[df2['Acronym'].isin(acronyms) & df2['activityType'].isin(activity_types)]
+    df2_part = df2.groupby(['name','shortName', 'activityType', 'organizationURL']).agg({'ecContribution':['sum']})
     df2_part = df2_part.reset_index()
     df2_part = df2_part.sort_values(by=('ecContribution', 'sum'), ascending=False)  # Sorting by sum of ecContribution in descending order
     return df2_part
 
-participants = display_dataframe(df2, acronym_c, activity_types, selected_years)
+participants = display_dataframe(df2, acronym_c, activity_types)
 st.write(participants, index=False)
+
+# Part 4: generate a new project dataframe with project coordinators from the selected countries and order it in ascending order by 'shortName'
+st.text('Table of Project Coordinators per Country')
+df2 = df2[df2['Acronym'].isin(acronym_c) & df2['activityType'].isin(activity_types)&df2['years'].isin(selected_years)]
+df2['Coordinator'] = (df2['role'] == 'coordinator') * 1
+pjc_df = df2.groupby(['name','shortName', 'activityType', 'organizationURL']).agg({'Coordinator': ['sum']})
+pjc_df = pjc_df[pjc_df[('Coordinator', 'sum')] > 0].reset_index() #only visualize those which have been coordinators
+#pjc_df = pjc_df.reset_index()
+pjc_df = pjc_df.sort_values('shortName')  # Ordered by shortName
+
+st.write(pjc_df, index=False)
 
 st.text('Table of Project Coordinators per Country')
 
